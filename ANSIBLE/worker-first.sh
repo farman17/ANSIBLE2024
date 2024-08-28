@@ -1,6 +1,7 @@
 #!/bin/bash
 clear
 echo "UPDATE SYSTEM......."
+apt install figlet
 figlet DEVOPS
 apt-get update
 clear
