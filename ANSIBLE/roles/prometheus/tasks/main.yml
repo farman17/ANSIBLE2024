@@ -1,0 +1,127 @@
+- name: Prometheus server-groupadd
+  group:
+    name: prometheus
+    state: present  
+ 
+- name: Prometheus server-useradd
+  user:
+    name: prometheus   
+    state: present     
+
+- name: Prometheus server-Creating Directory
+  file:
+     path: "{{ item }}"
+     state: directory
+  with_items:
+     - /var/lib/prometheus
+     - /tmp/prometheus
+
+- name: Prometheus server-Create rules
+  shell: for i in rules rules.d files_sd; do sudo mkdir -p /etc/prometheus/${i}; done
+
+- name: update and install prometheus
+  apt:
+    name: prometheus
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+
+#- name: Prometheus server-INSTALL
+  #shell: curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest | grep browser_download_url | grep linux-amd64 | cut -d '"' -f 4 | wget -qi -
+  #args:
+      #chdir: "/tmp/prometheus"
+      #warn: no
+
+#- name: Prometheus server-Extract archive.tgz 
+  #ansible.builtin.unarchive:
+    #src: /tmp/prometheus/prometheus-2.49.1.linux-amd64.tar.gz
+    #dest: /tmp/prometheus
+    #remote_src: yes
+
+#- name: Prometheus server-prometheus move to folder
+  #command: mv /tmp/prometheus/prometheus-2.49.1.linux-amd64/prometheus /usr/local/bin/
+
+#- name: Prometheus server-promtool move to folder
+  #command: mv /tmp/prometheus/prometheus-2.49.1.linux-amd64/promtool /usr/local/bin/
+
+#- name: Prometheus server-prometheus.yml move to folder
+  #command: mv /tmp/prometheus/prometheus-2.49.1.linux-amd64/prometheus.yml /etc/prometheus/
+
+#- name: Prometheus server-console move to folder
+  #command: cp -rf /tmp/prometheus/prometheus-2.49.1.linux-amd64/consoles/ /etc/prometheus/
+
+#- name: Prometheus server-console_libraries move to folder
+  #command: cp -rf /tmp/prometheus/prometheus-2.49.1.linux-amd64/console_libraries/ /etc/prometheus/
+
+#- name: Removing dir_cache & file_cache
+  #file:
+      #path: "{{ item }}"
+      #state: absent
+  #with_items:
+     #- /tmp/prometheus/prometheus-2.49.1.linux-amd64.tar.gz
+     #- /tmp/prometheus/prometheus-2.49.1.linux-amd64
+
+- name: copy config from templates/prometheus.service to /etc/systemd/system/
+  copy:
+    src: ../templates/prometheus.service
+    dest: /etc/systemd/system/
+
+- name: copy config from templates/prometheus.yml to /etc/
+  copy:
+    src: ../templates/prometheus.yml
+    dest: /etc/prometheus/
+
+- name: Replace IP targets prometheus with IP in group_vars
+  ansible.builtin.lineinfile:
+    path: /etc/prometheus/prometheus.yml
+    search_string: "targets: ['localhost:9100','IP-satu:9100','IP-dua:9100']"
+    line: "    - targets: ['localhost:9100','{{ domain_satu }}:9100','{{ domain_dua }}:9100','{{ domain_tiga }}:9100']"
+    #owner: root
+    #group: root
+    #mode: '0644'
+
+- name: Prometheus server-Change file permission etc
+  file:
+    path: /etc/prometheus/
+    owner: prometheus
+    group: prometheus
+    mode: '0775'
+
+- name: Prometheus server-Change file permission var/lib
+  file:
+    path: /var/lib/prometheus/
+    owner: prometheus
+    group: prometheus
+
+- name: Reload daemon system
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: starting service
+  systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+
+- name: Restart service prometheus, in all cases
+  ansible.builtin.service:
+    name: prometheus
+    state: restarted
+
+- name: DONE
+  debug:
+    msg: "The Prometheus service Installed successfully"
+
+- name: Check Promtool version
+  command: promtool  --version
+  register: promVersion
+- name: Print Promtool version
+  debug:
+    msg: "Promtool Version: {{ promVersion.stdout }}"
+
+- name: Check Prometheus version
+  command: prometheus  --version
+  register: prometVersion
+- name: Print Prometheus version
+  debug:
+    msg: "Prometheus Version: {{ prometVersion.stdout }}"

@@ -1,0 +1,39 @@
+- name: install dependencies
+  apt:
+    pkg:
+   # - php7.2-fpm
+   # - php7.2-cli
+   # - php7.2-mysql
+   # - php7.2-json
+   # - php7.2-opcache
+   # - php7.2-mbstring
+   # - php7.2-xml
+   # - php7.2-gd
+   # - php7.2-curl
+   # - php-zip
+   # - mysql-client-core-5.7
+   # - libc6
+   # - python3.10
+    - wget
+    - net-tools
+   # - python-mysqldb
+    - python-dev
+    - libmysqlclient-dev
+    - python3-pip
+    - python3-dev
+   # - python3-mysqldb
+    - apt-transport-https 
+    - ca-certificates 
+    - curl
+    - figlet 
+    - software-properties-common
+    - python-apt
+    - gnupg2 
+    - curl 
+    - unzip
+    - software-properties-common
+    - apt-transport-https
+    - sudo
+    - openjdk-11-jdk
+    - python3-certbot-nginx
+    update_cache: yes

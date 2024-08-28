@@ -1,0 +1,103 @@
+- name: Harbor-Download
+  ansible.builtin.get_url:
+    url: https://github.com/goharbor/harbor/releases/download/v2.4.1/harbor-offline-installer-v2.4.1.tgz
+    dest: /usr/local/bin
+
+- name: Harbor-Extract archive.tgz into /usr/local/bin
+  ansible.builtin.unarchive:
+    src: /usr/local/bin/harbor-offline-installer-v2.4.1.tgz
+    dest: /usr/local/bin
+    remote_src: yes
+
+
+- name: Copy file with owner and permissions
+  ansible.builtin.copy:
+    src: /usr/local/bin/harbor/harbor.yml.tmpl
+    dest: /usr/local/bin/harbor/harbor.yml
+    remote_src: yes   
+
+- name: Harbor-Replace old hostname 
+  #ansible.builtin.replace:
+    #path: /usr/local/bin/harbor.yml
+    #regexp: '(\s+)domainname(\s+.*)?$'
+    #replace: '\1mamanas\2'
+
+  replace: 
+        path: /usr/local/bin/harbor/harbor.yml
+        regexp: '[R|r]eg.mydomain.com'
+        replace: '{{ hostname }}'
+
+- name: Harbor-Replace port
+  replace:
+        path: /usr/local/bin/harbor/harbor.yml
+        regexp: '80'
+        replace: '{{ port }}'
+
+- name: Harbor-Replace password
+  replace:
+        path: /usr/local/bin/harbor/harbor.yml
+        regexp: '[H|h]arbor12345'
+        replace: '{{ pass_harbor }}'
+
+- name: Harbor-Disable Https
+  replace:
+        path: /usr/local/bin/harbor/harbor.yml
+        regexp: '[H|h]ttps:'
+        replace: '#https:'
+
+- name: Harbor-Disable port 443
+  replace:
+        path: /usr/local/bin/harbor/harbor.yml
+        regexp: 'port: 443'
+        replace: '#port: 443'
+
+- name: Harbor-Disable certificate
+  replace:
+        path: /usr/local/bin/harbor/harbor.yml
+        regexp: 'certificate: /your/certificate/path'
+        replace: '#certificate: /your/certificate/path'
+
+- name: Harbor-Disable private_key
+  replace:
+        path: /usr/local/bin/harbor/harbor.yml
+        regexp: 'private_key: /your/private/key/path'
+        replace: '#private_key: /your/private/key/path'
+
+- name: Harbor-INSTALL with no add-ons
+  command: bash install.sh
+  args:
+    chdir: /usr/local/bin/harbor
+
+- name: Removing dir_cache & file_cache
+  file:
+      path: "{{ item }}"
+      state: absent
+  with_items:
+     - /usr/local/bin/harbor-offline-installer-v2.4.1.tgz
+
+- name: copy domain config NGINX
+  copy:
+    src: ../templates/domain
+    dest: /etc/nginx/sites-enabled/{{ hostname }}
+  become: true
+
+- name: Replace port at sites-enabled NGINX
+  replace:
+        path: /etc/nginx/sites-enabled/{{ hostname }}
+        regexp: '8080'
+        replace: '{{ port }}'
+
+- name: Replace domain  at sites-enabled NGINX
+  replace:
+        path: /etc/nginx/sites-enabled/{{ hostname }}
+        regexp: 'domain'
+        replace: '{{ hostname }}'
+
+- name: restart NGINX
+  service:
+    name: nginx
+    state: restarted
+
+- name: DONE
+  debug:
+    msg: "The Harbor Repository Installed successfully"
