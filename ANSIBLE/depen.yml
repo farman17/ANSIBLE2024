@@ -1,6 +1,6 @@
 - name: ANSIBLE-COLONYLABS@2024
-  hosts: worker
-  remote_user: worker
+  hosts: doda
+  remote_user: master
   become: yes
   become_method: sudo
   vars:
