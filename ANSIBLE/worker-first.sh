@@ -12,7 +12,7 @@ echo "Ganti Hostname"
 echo -n "masukkan HOSTNAME baru untuk mesin ini: ";
 read hostname;
 tee /etc/hostname<<EOF
- $hostname
+$hostname
 EOF
 
 clear

@@ -11,5 +11,11 @@ yang haus dilakukan pada VM saat pertama kali install adalah :
 - ubah nama hostname :
   nano /etc/hostname
 
-- lakukan clone dan jalankan file :
+- lakukan clone :
+  git clone git@github.com:farman17/ANSIBLE2024.git
+
+- dan jalankan file :
   worker-first.sh
+
+
+DONE
