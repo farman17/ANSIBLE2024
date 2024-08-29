@@ -3,11 +3,11 @@ clear
 echo "PROSES INI HANYA DILAKUKAN DI MESIN BASTION. UNTUK INSTALL ANSIBLE DAN DEPENDENSI NYA"
 echo
 sudo apt install figlet
+clear
 figlet DEVOPS
 sudo apt install -y software-properties-common
 sudo add-apt-repository --yes --update ppa:ansible/ansible
 apt-get update
-clear
 sudo apt install -y ansible
 #apt-get install python3 ansible
 clear
@@ -23,7 +23,8 @@ clear
 #sudo ssh-keygen -t rsa
 #cd /root/.ssh
 #sudo chmod 400 id_rsa
-
+figlet DEVOPS
+echo
 echo -n "masukkan domain untuk config ansible (free): ";
 read host1;
 echo -n "masukkan IP dest-host: ";
@@ -33,6 +34,7 @@ read user1;
 
 echo
 clear
+figlet DEVOPS
 tee /etc/ansible/hosts<<EOF
  [$host1]
  $ip1     ansible_user=$user1  ansible_ssh_private_key=/root/.ssh/id_rsa
