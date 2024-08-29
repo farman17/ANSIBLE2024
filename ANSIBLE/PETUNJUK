@@ -1,0 +1,7 @@
+yang haus dilakukan pada VM saat pertama kali install adalah :
+- install open ssh :
+  apt install openssh-server
+
+- install net tools untuk cek IP :
+  apt install net-tools
+
