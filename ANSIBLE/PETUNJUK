@@ -5,3 +5,11 @@ yang haus dilakukan pada VM saat pertama kali install adalah :
 - install net tools untuk cek IP :
   apt install net-tools
 
+- agar bisa melakukan SSH, install ssh-keygen agar terbentuk id_rsa :
+  ssh-keygen -t rsa
+
+- ubah nama hostname :
+  nano /etc/hostname
+
+- lakukan clone dan jalankan file :
+  worker-first.sh
