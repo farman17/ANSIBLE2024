@@ -46,6 +46,12 @@ echo
 ssh-copy-id $user1@$ip1
 echo
 echo
+clear
+figlet DEVOPS
+echo "ping to ansible host......"
+echo
 ansible $host1 -m ping
 echo
 echo "DONE....ANSIBLE BERHASIL DI INSTALL SELANJUTNYA JANGAN LUPA domain dan user disesuaikan di file yml.."
+echo
+
