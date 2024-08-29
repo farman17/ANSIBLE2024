@@ -32,8 +32,10 @@ clear
 #sudo chmod 400 id_rsa
 echo
 echo
+figlet DEVOPS
 #echo "add NOPASSWORDD to root........"
 echo "%sudo  ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 echo "DONE, THANKYOU...selanjutkan mesin akan di restart"
 echo
 shutdown -r +1
+echo
