@@ -8,6 +8,8 @@ figlet DEVOPS
 sudo apt install -y software-properties-common
 sudo add-apt-repository --yes --update ppa:ansible/ansible
 apt-get update
+clear
+figlet DEVOPS
 sudo apt install -y ansible
 #apt-get install python3 ansible
 clear
