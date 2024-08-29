@@ -17,5 +17,8 @@ yang haus dilakukan pada VM saat pertama kali install adalah :
 - dan jalankan file :
   worker-first.sh
 
+- jalankan file :
+  ansible-firstInstall.sh
 
-DONE
+ 
+
