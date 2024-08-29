@@ -2,14 +2,22 @@
 clear
 echo "UPDATE SYSTEM......."
 apt install figlet
+clear
 figlet DEVOPS
 apt-get update
 clear
-echo "install open ssh untuk remote"
-apt install openssh-server
+#echo "install open ssh untuk remote"
+#apt install openssh-server
+echo "Ganti Hostname"
+echo -n "masukkan HOSTNAME baru untuk mesin ini: ";
+read hostname;
+tee /etc/hostname<<EOF
+ $hostname
+EOF
+
 clear
 
-echo -n "masukkan username baru-ansible: ";
+echo -n "masukkan username baru : ";
 read username;
 adduser $username
 usermod -aG sudo $username
@@ -26,4 +34,6 @@ echo
 echo
 #echo "add NOPASSWORDD to root........"
 #echo "%sudo  ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers    
-echo "DONE, THANKYOU......."
+echo "DONE, THANKYOU...selanjutkan mesin akan di restart"
+
+shutdown -r +1
