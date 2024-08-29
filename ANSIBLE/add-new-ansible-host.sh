@@ -13,13 +13,17 @@ read user1;
 echo
 clear
 figlet DEVOPS
-tee /etc/ansible/hosts<<EOF
- [$host1]
- $ip1     ansible_user=$user1  ansible_ssh_private_key=/root/.ssh/id_rsa
-EOF
+
+echo "[$host1]" >> /etc/ansible/hosts
+echo  "$ip1     ansible_user=$user1  ansible_ssh_private_key=/root/.ssh/id_rsa" >> /etc/ansible/hosts
+
 echo
 echo
 ssh-copy-id $user1@$ip1
 echo
 echo
+echo "ping to dest host"
+ansible all -m ping
+echo
+echo "DONE"
 
