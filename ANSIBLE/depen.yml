@@ -6,16 +6,16 @@
   vars:
     ansible_become_pass: "{{ vault_sudo_password }}"
   roles:
-    - update
-    - dependen
-    - nginx
-    - docker
+    #- update
+    #- dependen
+    #- nginx
+    #- docker
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
     #- prometheus
     #- grafana
-    #- harbor
+    - harbor
     #- k3s-kubernetes
     #- awx-ansible
     #- minio
