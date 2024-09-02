@@ -1,6 +1,6 @@
 - name: ANSIBLE-COLONYLABS@2024
-  hosts: doda
-  remote_user: master
+  hosts: alqoriah
+  remote_user: ayat
   become: yes
   become_method: sudo
   vars:
