@@ -1,10 +1,10 @@
 #HARBOR CONFIG
-hostname: 192.168.33.11
+hostname: 192.168.2.234
 port: 8008
 pass_harbor: 123456Ab
 
 #MINIO CONFIG
-IP: minio.bangjago.my.id
+IP: 192.168.2.234
 access_key: farman
 secret_key: farman17
 
