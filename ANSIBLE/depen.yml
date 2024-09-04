@@ -1,6 +1,6 @@
 - name: ANSIBLE-COLONYLABS@2024
-  hosts: alqoriah
-  remote_user: ayat
+  hosts: poseidon
+  remote_user: poseidon
   become: yes
   become_method: sudo
   vars:
@@ -15,10 +15,10 @@
     #- node_exporter
     #- prometheus
     #- grafana
-    - harbor
+    #- harbor
     #- k3s-kubernetes
     #- awx-ansible
-    #- minio
+    - minio
     # - webmin
     #- jenkins
     #- redis
