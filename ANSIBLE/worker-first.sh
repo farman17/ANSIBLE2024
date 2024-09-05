@@ -5,9 +5,10 @@ apt install figlet
 clear
 figlet DEVOPS
 apt-get update
+apt install net-tools
 clear
-#echo "install open ssh untuk remote"
-#apt install openssh-server
+echo "install open ssh untuk remote"
+apt install openssh-server
 echo "Ganti Hostname"
 echo -n "masukkan HOSTNAME baru untuk mesin ini: ";
 read hostname;
