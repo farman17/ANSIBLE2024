@@ -19,8 +19,8 @@
     #- k3s-kubernetes
     #- awx-ansible
     #- minio
-     - webmin
+    # - webmin
     #- jenkins
-    #- redis
-    #- redis-replica
+    - redis
+    - redis-replica
     #- SUMMARY
