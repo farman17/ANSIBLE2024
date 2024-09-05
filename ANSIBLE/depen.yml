@@ -18,8 +18,8 @@
     #- harbor
     #- k3s-kubernetes
     #- awx-ansible
-    - minio
-    # - webmin
+    #- minio
+     - webmin
     #- jenkins
     #- redis
     #- redis-replica
