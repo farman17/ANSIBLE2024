@@ -1,25 +1,12 @@
-#- name: configure apt repository (first task)
-  #ansible.builtin.apt_repository:
-    #repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib'
-    #filename: elastic
-    #update_cache: yes
-    #state: present
-  #become: true
+
 - name: webmin-apt key Download
   ansible.builtin.get_url:
      url: https://download.webmin.com/jcameron-key.asc 
      dest: /usr/share/keyrings/webmin.gpg
  
-#- name: Update and upgrade apt packages
- # become: true
-  #apt:
-   # upgrade: no
-    #update_cache: yes
-    #cache_valid_time: 86400 #One day
-
-- name: Add Example repo
+- name: Add  repo for webMin
   ansible.builtin.apt_repository:
-    filename: example-repo
+    filename: webmin-repo
     repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib'
     update_cache: yes
 
@@ -28,7 +15,7 @@
   apt:
     upgrade: no
     update_cache: yes
-    #cache_valid_time: 86400 #One day
+   
 
 #- name: Add Example repo
  # ansible.builtin.apt_repository:                                                                                                        **********************************************************
@@ -44,20 +31,6 @@
    # url: https://ftp-master.debian.org/keys/archive-key-6.0.asc
     #keyring: /etc/apt/trusted.gpg.d/debian.gpg
 
-#- name: Add an Apt signing key, uses whichever key is at the URL
- # ansible.builtin.apt_key:
-  #  url: https://download.webmin.com/jcameron-key.asc
-   # state: present
-
-#- name: webmin-apt key Download
- # ansible.builtin.get_url:
-  #   url: https://download.webmin.com/developers-key.asc
-   #  dest: /usr/local/bin
-
-#- name: Add specified repository into sources list
- # ansible.builtin.apt_repository:
-  #   repo: deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib
-   #  state: present
 
 - name: install WebMin
   apt:
