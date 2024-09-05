@@ -22,5 +22,5 @@
     # - webmin
     #- jenkins
     - redis
-    - redis-replica
+    #- redis-replica
     #- SUMMARY

@@ -80,4 +80,6 @@
 
 - name: DONE
   debug:
-    msg: "The REDIS-Server Installed successfully"
+    msg: "The REDIS-Server Installed successfully, If Redis 
+Is Deployed to an Isolated Network please test by redis-cli 
+-h [IP-machine]"
