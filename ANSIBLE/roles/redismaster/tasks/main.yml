@@ -1,0 +1,112 @@
+- name: Introductions
+  debug:
+    msg: "First, you will need to install Redis server package on both master and slave hosts. "
+
+- name: Add specified repository into sources list
+  ansible.builtin.apt_repository:
+    repo: ppa:redislabs/redis
+    state: present
+
+- name: Install redis
+  ansible.builtin.apt:
+    name: redis
+    state: present
+
+#- name: restart and enabled redis
+ # service:
+  #  name: redis-server
+   # state: restarted
+    #enabled: yes
+
+
+- name: set keepalive time at redis.conf
+  ansible.builtin.replace:
+    path: /etc/redis/redis.conf
+    regexp: 'tcp-keepalive 300'
+    replace: 'tcp-keepalive 60'
+
+#- name: make the server accessible from the remote hosts
+ # ansible.builtin.replace:
+  #  path: /etc/redis/redis.conf
+   # regexp: '# bind 192.168.1.100 10.0.0.1  # listens on two specific IPv4 addresses'
+    #replace: 'bind 127.0.0.1 {{ ip_nodes_redis_master }}'
+
+- name: change default append to yes
+  ansible.builtin.replace:
+    path: /etc/redis/redis.conf
+    regexp: 'appendonly no'
+    replace: 'appendonly yes'
+
+- name: change the following line to make the server accessible from the remote hosts
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    line: 'bind 127.0.0.1 {{ ip_nodes_redis_master }}'
+    create: yes
+
+- name: change the following line to set the master password
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    line: 'requirepass {{ pass_redis }}'
+    create: yes
+
+- name: add maxmemory
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    line: 'maxmemory-policy noeviction'
+    create: yes
+
+#- name: Insert mode cluster  
+ # ansible.builtin.lineinfile:
+  #  path: /etc/redis/redis.conf
+   # line: 'cluster-enabled yes'
+    #create: yes
+
+#- name: Insert config file
+ # ansible.builtin.lineinfile:
+  #  path: /etc/redis/redis.conf
+   # line: 'cluster-config-file nodes.conf'
+    #create: yes
+
+#- name: Insert cluster timeout
+ # ansible.builtin.lineinfile:
+  #  path: /etc/redis/redis.conf
+   # line: 'cluster-node-timeout 15000'
+    #create: yes
+
+#- name: Insert append
+ # ansible.builtin.lineinfile:
+  #  path: /etc/redis/redis.conf
+   # line: 'appendonly yes'
+    #create: yes
+
+#- name: Insert Protected-mode
+ # ansible.builtin.lineinfile:
+  #  path: /etc/redis/redis.conf
+   # line: 'protected-mode no'
+    #create: yes
+
+- name: restart and enabled redis
+  service:
+    name: redis-server
+    state: restarted
+    enabled: yes
+
+#- name: Create Cluster-redis
+ # shell: redis-cli --cluster create {{ ip_nodes_redis_master }}:6379 {{ ip_nodes_redis_replica }}:6379 --cluster-replicas 1
+#- name: At this point, Redis master and slave server are configured and listen to port 6379
+ # ansible.builtin.command: ss -antpl | grep redis
+
+- name: At this point, Redis master and slave server are configured and listen to port 6379
+  shell:
+      "ss -antpl | grep redis"
+  register: redis_info
+    
+- debug:
+     msg: "{{redis_info.stdout_lines}}"
+
+- name: INSTALL SUCCESSFULLY
+  debug:
+    msg: "The REDIS-Server Installed successfully, If Redis 
+Is Deployed to an Isolated Network please test by redis-cli 
+-h [IP-machine]"
+
