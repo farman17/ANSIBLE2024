@@ -1,6 +1,6 @@
 - name: ANSIBLE-COLONYLABS@2024
-  hosts: poseidon
-  remote_user: poseidon
+  hosts: REDS
+  remote_user: redsmaster
   become: yes
   become_method: sudo
   vars:
@@ -21,6 +21,6 @@
     #- minio
     # - webmin
     #- jenkins
-    - redis
+    - redismaster
     #- redis-replica
     #- SUMMARY
