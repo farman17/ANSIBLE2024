@@ -1,7 +1,17 @@
+#rancher
+docker_packages:
+  - docker.io
+rancher_container_name: rancher
+rancher_image: rancher/rancher:latest
+rancher_http_port: 8080
+rancher_https_port: 8443
+
 #HARBOR CONFIG
-hostname: 192.168.2.234
+hostname: 192.168.2.226
 port: 8008
 pass_harbor: 123456Ab
+harbor_version: latest
+harbor_install_dir: /usr/local/bin
 
 #MINIO CONFIG
 IP: 192.168.2.234
@@ -30,7 +40,7 @@ ip_nodes_redis_replica: 192.168.2.228
 master_user: farman
 
 #password sudo
-vault_sudo_password: 123123Ab
+vault_sudo_password: t0x1cF31
 
 #domain and IP for node prometheus
 ip_node_prom_satu: 192.168.2.216  prom-192.168.2.216
@@ -42,3 +52,9 @@ domain_tiga: prom-192.168.2.245
 
 #node_exporter
 download_version_node: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+
+#BIND9
+bind9_packages:
+   - bind9
+   - bind9utils
+   - bind9-doc

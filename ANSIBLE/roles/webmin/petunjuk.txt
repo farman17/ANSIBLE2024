@@ -1,0 +1,5 @@
+jalankan webmin via tunneling :
+ssh -L 11000:localhost:10000 farman17@192.168.2.240
+
+*sesuaikan username dan pass dari mesin tempat install webmin
+*lalu di browser, tinggal akses https://localhost:11000

@@ -19,7 +19,7 @@ echo  "$ip1     ansible_user=$user1  ansible_ssh_private_key=/root/.ssh/id_rsa" 
 
 echo
 echo
-ssh-copy-id $user1@$ip1
+ssh-copy-id -f $user1@$ip1
 echo
 echo
 echo "ping to dest host"

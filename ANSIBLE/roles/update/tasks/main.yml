@@ -10,3 +10,19 @@
     update_cache: true
     cache_valid_time: 3600
     force_apt_get: true
+
+- name: Install apache2-utils (required for htpasswd)
+  apt:
+    name: apache2-utils
+    state: present
+
+- name: Install required system packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: yes

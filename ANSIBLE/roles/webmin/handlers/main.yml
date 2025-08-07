@@ -1,0 +1,4 @@
+- name: Restart Webmin
+  service:
+    name: webmin
+    state: restarted

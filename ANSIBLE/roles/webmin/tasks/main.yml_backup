@@ -1,0 +1,44 @@
+- name: webmin-apt key Download
+  ansible.builtin.get_url:
+     url: https://download.webmin.com/jcameron-key.asc 
+     dest: /usr/share/keyrings/webmin.gpg
+ 
+- name: Add  repo for webMin
+  ansible.builtin.apt_repository:
+    filename: webmin-repo
+    repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib'
+    update_cache: yes
+
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: no
+    update_cache: yes
+   
+
+#- name: Add Example repo
+ # ansible.builtin.apt_repository:                                                                                                        **********************************************************
+  #  filename: example-repo
+   # #repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] https://download.webmin.com/jcameron-key.asc'
+    #repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib'                  **********************************************************
+    #update_cache: yes                                                                                                                    (Suite), E:The list of sources could not be read."}       
+
+
+#- name: Add an Apt signeyring file
+ # ansible.builtin.apt_key:
+  #  id: 9FED2BCBDCD29CDF762678CBAED4B06F473041FA
+   # url: https://ftp-master.debian.org/keys/archive-key-6.0.asc
+    #keyring: /etc/apt/trusted.gpg.d/debian.gpg
+
+
+- name: install WebMin
+  apt:
+    name: webmin
+    state: present
+
+- name: change root password
+  command: sudo /usr/share/webmin/changepass.pl /etc/webmin root {{ password }}
+
+- name: DONE
+  debug:
+    msg: "The Webmin  Installed successfully, please access by port 10000, IP/Domain:10000"

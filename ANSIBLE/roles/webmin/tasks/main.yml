@@ -1,45 +1,84 @@
+- name: Cek apakah mirror id.archive.ubuntu.com digunakan
+  shell: grep -q 'http://id.archive.ubuntu.com' /etc/apt/sources.list
+  register: check_id_mirror
+  ignore_errors: yes
 
-- name: webmin-apt key Download
-  ansible.builtin.get_url:
-     url: https://download.webmin.com/jcameron-key.asc 
-     dest: /usr/share/keyrings/webmin.gpg
- 
-- name: Add  repo for webMin
-  ansible.builtin.apt_repository:
-    filename: webmin-repo
-    repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib'
-    update_cache: yes
+- name: Ganti mirror repo dari id.archive.ubuntu.com ke archive.ubuntu.com
+  replace:
+    path: /etc/apt/sources.list
+    regexp: 'http://id.archive.ubuntu.com'
+    replace: 'http://archive.ubuntu.com'
+  when: check_id_mirror.rc == 0
 
-- name: Update and upgrade apt packages
-  become: true
+- name: Ensure directory for apt keyrings exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Webmin GPG key
+  get_url:
+    url: http://www.webmin.com/jcameron-key.asc
+    dest: /etc/apt/keyrings/webmin.asc
+    mode: '0644'
+
+- name: Add Webmin APT repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/webmin.asc] http://download.webmin.com/download/repository sarge contrib"
+    state: present
+    filename: webmin
+
+- name: Update APT cache
   apt:
-    upgrade: no
     update_cache: yes
-   
 
-#- name: Add Example repo
- # ansible.builtin.apt_repository:                                                                                                        **********************************************************
-  #  filename: example-repo
-   # #repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] https://download.webmin.com/jcameron-key.asc'
-    #repo: 'deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib'                  **********************************************************
-    #update_cache: yes                                                                                                                    (Suite), E:The list of sources could not be read."}       
-
-
-#- name: Add an Apt signeyring file
- # ansible.builtin.apt_key:
-  #  id: 9FED2BCBDCD29CDF762678CBAED4B06F473041FA
-   # url: https://ftp-master.debian.org/keys/archive-key-6.0.asc
-    #keyring: /etc/apt/trusted.gpg.d/debian.gpg
-
-
-- name: install WebMin
+- name: Install Webmin
   apt:
     name: webmin
     state: present
 
-- name: change root password
-  command: sudo /usr/share/webmin/changepass.pl /etc/webmin root {{ password }}
+#- name: Set Webmin root password using htpasswd
+ # command: htpasswd -b /etc/webmin/miniserv.users root "{{ password }}"
+  #notify: Restart Webmin
 
-- name: DONE
-  debug:
-    msg: "The Webmin  Installed successfully, please access by port 10000, IP/Domain:10000"
+#- name: Restart Webmin
+ # service:
+  #  name: webmin
+   # state: restarted
+
+- name: Set Webmin to use internal authentication (auth_mode=webmin)
+  lineinfile:
+    path: /etc/webmin/config
+    line: "auth_mode=webmin"
+    create: yes
+  notify: Restart Webmin
+
+- name: Wait until miniserv.users exists
+  wait_for:
+    path: /etc/webmin/miniserv.users
+    timeout: 30
+
+#- name: Set Webmin root password using htpasswd
+ # command: htpasswd -b /etc/webmin/miniserv.users root "{{ password }}"
+- name: Set Webmin root password using changepass.pl
+  command: /usr/share/webmin/changepass.pl /etc/webmin root "{{ password }}"
+  notify: Restart Webmin
+
+- name: Restart Webmin after setting password
+  service:
+    name: webmin
+    state: restarted
+
+- name: Ensure Webmin service is started
+  service:
+    name: webmin
+    state: started
+    enabled: yes
+
+# Opsional - jika menggunakan UFW dan butuh buka port Webmin
+- name: Allow Webmin port 10000 in firewall
+  ufw:
+    rule: allow
+    port: '10000'
+    proto: tcp
+  when: ansible_facts.os_family == 'Debian'

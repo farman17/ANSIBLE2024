@@ -1,104 +1,115 @@
-- name: Harbor-Download
-  ansible.builtin.get_url:
-    url: https://github.com/goharbor/harbor/releases/download/v2.11.1/harbor-offline-installer-v2.11.1.tgz
-    dest: /usr/local/bin
+- name: Get latest Harbor version from GitHub API
+  uri:
+    url: https://api.github.com/repos/goharbor/harbor/releases/latest
+    return_content: yes
+  register: harbor_api_response
+  when: harbor_version == 'latest'
 
-- name: Harbor-Extract archive.tgz into /usr/local/bin
+- name: Set latest Harbor version from API
+  set_fact:
+    resolved_harbor_version: "{{ harbor_api_response.json.tag_name }}"
+  when: harbor_version == 'latest'
+
+- name: Set specific Harbor version (manual override)
+  set_fact:
+    resolved_harbor_version: "{{ harbor_version }}"
+  when: harbor_version != 'latest'
+
+- name: Download Harbor installer
+  ansible.builtin.get_url:
+    url: "https://github.com/goharbor/harbor/releases/download/{{ resolved_harbor_version }}/harbor-offline-installer-{{ resolved_harbor_version }}.tgz"
+    dest: "{{ harbor_install_dir }}/harbor-installer.tgz"
+    mode: '0644'
+
+- name: Extract Harbor installer
   ansible.builtin.unarchive:
-    src: /usr/local/bin/harbor-offline-installer-v2.11.1.tgz
-    dest: /usr/local/bin
+    src: "{{ harbor_install_dir }}/harbor-installer.tgz"
+    dest: "{{ harbor_install_dir }}"
     remote_src: yes
 
-
-- name: Copy file with owner and permissions
+- name: Copy Harbor config template
   ansible.builtin.copy:
-    src: /usr/local/bin/harbor/harbor.yml.tmpl
-    dest: /usr/local/bin/harbor/harbor.yml
-    remote_src: yes   
+    src: "{{ harbor_install_dir }}/harbor/harbor.yml.tmpl"
+    dest: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    remote_src: yes
 
-- name: Harbor-Replace old hostname 
-  #ansible.builtin.replace:
-    #path: /usr/local/bin/harbor.yml
-    #regexp: '(\s+)domainname(\s+.*)?$'
-    #replace: '\1mamanas\2'
-
-  replace: 
-        path: /usr/local/bin/harbor/harbor.yml
-        regexp: '[R|r]eg.mydomain.com'
-        replace: '{{ hostname }}'
-
-- name: Harbor-Replace port
+- name: Replace hostname in harbor.yml
   replace:
-        path: /usr/local/bin/harbor/harbor.yml
-        regexp: '80'
-        replace: '{{ port }}'
+    path: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    regexp: 'hostname:.*'
+    replace: "hostname: {{ hostname }}"
 
-- name: Harbor-Replace password
+- name: Replace port in harbor.yml
   replace:
-        path: /usr/local/bin/harbor/harbor.yml
-        regexp: '[H|h]arbor12345'
-        replace: '{{ pass_harbor }}'
+    path: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    regexp: 'port: 80'
+    replace: "port: {{ port }}"
 
-- name: Harbor-Disable Https
+- name: Replace admin password in harbor.yml
   replace:
-        path: /usr/local/bin/harbor/harbor.yml
-        regexp: '[H|h]ttps:'
-        replace: '#https:'
+    path: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    regexp: 'harbor_admin_password:.*'
+    replace: "harbor_admin_password: {{ pass_harbor }}"
 
-- name: Harbor-Disable port 443
+- name: Disable https in harbor.yml
   replace:
-        path: /usr/local/bin/harbor/harbor.yml
-        regexp: 'port: 443'
-        replace: '#port: 443'
+    path: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    regexp: '^https:'
+    replace: '#https:'
 
-- name: Harbor-Disable certificate
+- name: Disable port 443
   replace:
-        path: /usr/local/bin/harbor/harbor.yml
-        regexp: 'certificate: /your/certificate/path'
-        replace: '#certificate: /your/certificate/path'
+    path: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    regexp: 'port: 443'
+    replace: '#port: 443'
 
-- name: Harbor-Disable private_key
+- name: Disable certificate path
   replace:
-        path: /usr/local/bin/harbor/harbor.yml
-        regexp: 'private_key: /your/private/key/path'
-        replace: '#private_key: /your/private/key/path'
+    path: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    regexp: 'certificate: /your/certificate/path'
+    replace: '#certificate: /your/certificate/path'
 
-- name: Harbor-INSTALL with no add-ons
-  command: bash install.sh
+- name: Disable private key path
+  replace:
+    path: "{{ harbor_install_dir }}/harbor/harbor.yml"
+    regexp: 'private_key: /your/private/key/path'
+    replace: '#private_key: /your/private/key/path'
+
+- name: Install Harbor
+  command: ./install.sh
   args:
-    chdir: /usr/local/bin/harbor
+    chdir: "{{ harbor_install_dir }}/harbor"
 
-- name: Removing dir_cache & file_cache
+- name: Cleanup installer
   file:
-      path: "{{ item }}"
-      state: absent
-  with_items:
-     - /usr/local/bin/harbor-offline-installer-v2.11.1.tgz
-     - /usr/local/bin/harbor/harbor.v2.11.1.tar.gz
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ harbor_install_dir }}/harbor-installer.tgz"
+    - "{{ harbor_install_dir }}/harbor/harbor.{{ resolved_harbor_version }}.tar.gz"
 
-- name: copy domain config NGINX
+- name: Copy NGINX domain config
   copy:
     src: ../templates/domain
     dest: /etc/nginx/sites-enabled/{{ hostname }}
-  become: true
 
-- name: Replace port at sites-enabled NGINX
+- name: Replace port in NGINX config
   replace:
-        path: /etc/nginx/sites-enabled/{{ hostname }}
-        regexp: '8080'
-        replace: '{{ port }}'
+    path: /etc/nginx/sites-enabled/{{ hostname }}
+    regexp: '8080'
+    replace: '{{ port }}'
 
-- name: Replace domain  at sites-enabled NGINX
+- name: Replace domain in NGINX config
   replace:
-        path: /etc/nginx/sites-enabled/{{ hostname }}
-        regexp: 'domain'
-        replace: '{{ hostname }}'
+    path: /etc/nginx/sites-enabled/{{ hostname }}
+    regexp: 'domain'
+    replace: '{{ hostname }}'
 
-- name: restart NGINX
+- name: Restart NGINX
   service:
     name: nginx
     state: restarted
 
 - name: DONE
   debug:
-    msg: "The Harbor Repository Installed successfully"
+    msg: "The latest Harbor Repository ({{ resolved_harbor_version }}) installed successfully!"

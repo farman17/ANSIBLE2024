@@ -1,12 +1,12 @@
 - name: ANSIBLE-COLONYLABS@2024
-  hosts: REDS
-  remote_user: redsmaster
+  hosts: server
+  remote_user: farman17
   become: yes
   become_method: sudo
   vars:
     ansible_become_pass: "{{ vault_sudo_password }}"
   roles:
-    #- update
+    - update
     #- dependen
     #- nginx
     #- docker
@@ -19,8 +19,10 @@
     #- k3s-kubernetes
     #- awx-ansible
     #- minio
-    # - webmin
+    #- webmin
+    #- bind9_dns
     #- jenkins
-    - redismaster
+    #- redismaster
     #- redis-replica
+    - rancher
     #- SUMMARY

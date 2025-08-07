@@ -1,0 +1,23 @@
+1.Jalankan setup (sebelum menjalankan cek dulu authtoken nya):
+chmod +x setup-ngrok-multi.sh
+./setup-ngrok-multi.sh
+
+2.Buat sesi tmux khusus ngrok di mesin utama (/root/ANSIBLE2024/ANSIBLE/NGROK), jalankan :
+tmux new -s ngrok
+Ini akan masuk ke sesi tmux bernama ngrok
+
+3.Jalankan ngrok dari dalam tmux :
+ngrok start --all
+
+4.Tinggalkan tmux tanpa menghentikan proses :
+Ctrl + b lalu tekan d
+
+5.Jika ingin kembali ke sesi tmux kapan pun:
+tmux attach -t ngrok
+
+6.Kalau kamu mau tutup total dan hapus sesi :
+tmux kill-session -t ngrok
+
+
+akses web :
+https://dashboard.ngrok.com/get-started/setup/linux
