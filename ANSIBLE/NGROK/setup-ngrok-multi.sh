@@ -11,9 +11,14 @@ tunnels:
     proto: http
     addr: 8008
 
-  web10000:
+  web1000:
     proto: http
     addr: 10000
+
+  rancher:
+    proto: tcp
+    addr: 192.168.2.226:8443
+
 EOF
 
 echo "✅ Konfigurasi ngrok.yml berhasil dibuat di /root/.config/ngrok/"
