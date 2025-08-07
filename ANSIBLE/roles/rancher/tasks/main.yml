@@ -1,31 +1,41 @@
-    - name: Create Rancher container
-      docker_container:
-        name: "{{ rancher_container_name }}"
-        image: "{{ rancher_image }}"
-        state: started
-        restart_policy: always
-        privileged: true
-        ports:
-          - "{{ rancher_http_port }}:8080"
-          - "{{ rancher_https_port }}:8443"
-        volumes:
-          - /opt/rancher:/var/lib/rancher
+- name: Deploy rancher
+  community.docker.docker_container:
+    name: rancher
+    image: rancher/rancher:latest
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "8080:80"
+      - "8443:443"
+    privileged: true
 
-    - name: Wait for Rancher port to be open
-      wait_for:
-        host: "{{ inventory_hostname }}"
-        port: "{{ rancher_https_port }}"
-        timeout: 600
-        state: started
+- name: Wait for Rancher container to be ready
+  ansible.builtin.wait_for:
+    port: 8443
+    host: "127.0.0.1"
+    delay: 10
+    timeout: 300
+  delegate_to: localhost
 
-    - name: Wait for Rancher Web UI to become available
-      uri:
-        url: "https://{{ inventory_hostname }}:{{ rancher_https_port }}"
-        method: GET
-        validate_certs: no
-        status_code: 200
-      register: rancher_ui
-      retries: 60
-      delay: 10
-      until: rancher_ui.status == 200
+- name: Get Rancher container ID
+  ansible.builtin.shell: "docker ps -qf name=rancher"
+  register: rancher_container_id
+  changed_when: false
 
+- name: Debug ID container (opsional, untuk verifikasi)
+  ansible.builtin.debug:
+    msg: "ID Container Rancher: {{ rancher_container_id.stdout }}"
+
+- name: Tunggu sampai Rancher siap (dengan periksa log)
+  ansible.builtin.shell: "docker logs {{ rancher_container_id.stdout }} 2>&1 | grep 'Bootstrap Password:'"
+  register: bootstrap_password
+  retries: 15
+  delay: 10
+  until: bootstrap_password.stdout != ""
+  changed_when: false
+  ignore_errors: true
+
+- name: Tampilkan Bootstrap Password
+  ansible.builtin.debug:
+    msg: "Password Bootstrap Rancher: {{ bootstrap_password.stdout }}"
+  when: bootstrap_password is defined and bootstrap_password.stdout != ""

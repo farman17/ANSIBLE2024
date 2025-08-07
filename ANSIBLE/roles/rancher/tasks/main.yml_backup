@@ -1,0 +1,10 @@
+    - name: Deploy rancher
+      community.docker.docker_container:
+        name: rancher
+        image: rancher/rancher:latest
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "8080:80"
+          - "8443:443"
+        privileged: true
