@@ -34,14 +34,6 @@ master_user: farman
 #password sudo
 vault_sudo_password: t0x1cF31
 
-#domain and IP for node prometheus
-ip_node_prom_satu: 192.168.2.216  prom-192.168.2.216
-ip_node_prom_dua: 192.168.2.238   prom-192.168.2.238
-ip_node_prom_tiga: 192.168.2.245  prom-192.168.2.245
-domain_satu: prom-192.168.2.216
-domain_dua: prom-192.168.2.238
-domain_tiga: prom-192.168.2.245
-
 #node_exporter
 download_version_node: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
 
@@ -50,3 +42,17 @@ bind9_packages:
    - bind9
    - bind9utils
    - bind9-doc
+
+#PROMETHEUS2025
+prometheus_targets:
+  - localhost:9090
+
+#PROMETHEUS TARGET
+node_targets:
+  - 192.168.2.226:9100   # server pusat
+  - 192.168.2.216:9100   # prom-node-1
+  - 192.168.2.238:9100   # prom-node-2
+  - 192.168.2.245:9100   # prom-node-3
+
+#PROMETHEUS INSTANCE
+node_default_instance: "192.168.2.226:9100"

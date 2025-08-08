@@ -1,0 +1,45 @@
+- name: Fix stray prometheus user if non-system (UID >= 1000)
+  shell: |
+    if id prometheus &>/dev/null; then
+      if [ "$(id -u prometheus)" -ge 1000 ]; then
+        systemctl stop prometheus prometheus-node-exporter 2>/dev/null || true
+        userdel -r prometheus || true
+        groupdel prometheus 2>/dev/null || true
+      fi
+    fi
+
+- name: Install Prometheus & Node Exporter
+  apt:
+    name:
+      - prometheus
+      - prometheus-node-exporter
+      - prometheus-node-exporter-collectors
+    state: present
+    update_cache: yes
+
+- name: Deploy prometheus.yml
+  copy:
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+    content: |
+      global:
+        scrape_interval: 15s
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: {{ prometheus_targets | to_nice_json }}
+        - job_name: 'node'
+          static_configs:
+            - targets: {{ node_targets | to_nice_json }}
+  notify: Reload prometheus
+
+- name: Ensure services enabled & started
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - prometheus
+    - prometheus-node-exporter

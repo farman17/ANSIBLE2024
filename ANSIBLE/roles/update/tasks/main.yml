@@ -24,5 +24,8 @@
       - curl
       - gnupg
       - lsb-release
+      - software-properties-common
+      - wget
+      - gnupg2
     state: present
     update_cache: yes
