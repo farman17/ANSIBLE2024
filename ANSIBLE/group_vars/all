@@ -26,7 +26,7 @@ kafka_offsets_rf: 1
 kafka_txn_rf: 1
 kafka_min_isr: 1
 ################################################################
-# group_vars/all.yml
+
 kafka_ui_bootstrap_servers: "192.168.2.226:9092"
 
 # pilih salah satu:
@@ -40,7 +40,6 @@ kafka_ui_image_tag: "v0.7.2"
 
 kafka_ui_port: 8080
 
-#kafka_ui_password_hash: "{{ 'farman123' | password_hash('sha512') }}"
 kafka_ui_auth_type: LOGIN_FORM
 kafka_ui_auth_user: admin
 kafka_ui_auth_password: farman123
