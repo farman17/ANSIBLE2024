@@ -27,5 +27,6 @@
       - software-properties-common
       - wget
       - gnupg2
+      - python3-passlib
     state: present
     update_cache: yes

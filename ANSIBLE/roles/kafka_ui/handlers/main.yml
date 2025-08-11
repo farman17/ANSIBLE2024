@@ -1,0 +1,8 @@
+- name: Daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Restart kafka-ui
+  ansible.builtin.systemd:
+    name: kafka-ui
+    state: restarted

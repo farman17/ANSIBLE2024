@@ -1,0 +1,93 @@
+# === Kafka UI via Docker (Tasks) ===
+# Vars yang bisa di-override:
+# kafka_ui_bootstrap_servers, kafka_ui_port, kafka_ui_image_repo, kafka_ui_image_tag
+
+
+- name: Ensure kafka-ui login user (with home & docker group)
+  ansible.builtin.user:
+    name: "{{ kafka_ui_user | default('kafka-ui') }}"
+    shell: /bin/bash
+    create_home: yes
+    groups: docker
+    append: yes
+    password: "{{ kafka_ui_password_hash | default(omit) }}"
+    update_password: on_create   # password hanya di-set saat user pertama dibuat
+
+- name: Ensure config dir exists
+  ansible.builtin.file:
+    path: /etc/kafka-ui
+    state: directory
+    owner: "{{ kafka_ui_user | default('kafka-ui') }}"
+    group: "{{ kafka_ui_user | default('kafka-ui') }}"
+    mode: "0755"
+
+# Tulis konfigurasi aplikasi
+- name: Write /etc/kafka-ui/config.yml
+  ansible.builtin.copy:
+    dest: /etc/kafka-ui/config.yml
+    owner: "{{ kafka_ui_user | default('kafka-ui') }}"
+    group: "{{ kafka_ui_user | default('kafka-ui') }}"
+    mode: "0644"
+    content: |
+      kafka:
+        clusters:
+          - name: lab
+            bootstrap-servers: {{ kafka_ui_bootstrap_servers | default('192.168.2.226:9092') }}
+      server:
+        port: {{ kafka_ui_port | default(8080) }}
+  notify: Restart kafka-ui
+
+# Unit systemd (pakai var repo & tag) → NOTIFY handlers
+- name: Install/Update kafka-ui.service (Docker)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/kafka-ui.service
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Kafka UI (Docker)
+      After=network-online.target docker.service
+      Wants=network-online.target docker.service
+      Requires=docker.service
+
+      [Service]
+      User={{ kafka_ui_user | default('kafka-ui') }}
+      Restart=always
+      RestartSec=5
+      ExecStartPre=/usr/bin/docker pull {{ kafka_ui_image_repo | default('provectuslabs/kafka-ui') }}:{{ kafka_ui_image_tag | default('v0.7.2') }}
+      ExecStartPre=-/usr/bin/docker rm -f kafka-ui
+      ExecStart=/usr/bin/docker run --name kafka-ui \
+        -p {{ kafka_ui_port | default(8080) }}:8080 \
+        -e AUTH_TYPE={{ kafka_ui_auth_type | default('LOGIN_FORM') }} \
+        -e SPRING_SECURITY_USER_NAME={{ kafka_ui_auth_user | default('admin') }} \
+        -e SPRING_SECURITY_USER_PASSWORD={{ kafka_ui_auth_password | default('ChangeMe!') }} \
+        -e SPRING_CONFIG_ADDITIONAL_LOCATION=/etc/kafka-ui/config.yml \
+        -v /etc/kafka-ui/config.yml:/etc/kafka-ui/config.yml:ro \
+        {{ kafka_ui_image_repo | default('provectuslabs/kafka-ui') }}:{{ kafka_ui_image_tag | default('v0.7.2') }}
+      ExecStop=/usr/bin/docker stop kafka-ui
+
+      [Install]
+      WantedBy=multi-user.target
+  notify:
+    - Daemon-reload
+    - Restart kafka-ui
+
+# Pastikan aktif lalu jalankan handler sebelum health-check
+- name: Ensure kafka-ui enabled
+  ansible.builtin.systemd:
+    name: kafka-ui
+    enabled: yes
+
+- name: Apply handlers now
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure kafka-ui running
+  ansible.builtin.systemd:
+    name: kafka-ui
+    state: started
+
+# Tunggu port UI up
+- name: Wait until UI is reachable
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ kafka_ui_port | default(8080) }}"
+    timeout: 120

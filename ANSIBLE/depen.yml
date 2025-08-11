@@ -9,7 +9,7 @@
     - update
     #- dependen
     #- nginx
-    #- docker
+    - docker
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
@@ -23,6 +23,8 @@
     #- bind9_dns
     #- jenkins
     #- redismaster
-    - redisslave
+    #- redisslave
+    #- kafka
+    - kafka_ui
     #- rancher
     #- SUMMARY

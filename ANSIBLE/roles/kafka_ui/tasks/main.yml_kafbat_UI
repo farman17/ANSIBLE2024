@@ -1,0 +1,79 @@
+# === Kafbat Kafka UI via Docker (Tasks) ===
+
+- name: Ensure kafka-ui system user
+  ansible.builtin.user:
+    name: kafka-ui
+    shell: /usr/sbin/nologin
+    system: yes
+    create_home: no
+
+- name: Ensure config dir exists
+  ansible.builtin.file:
+    path: /etc/kafka-ui
+    state: directory
+    owner: kafka-ui
+    group: kafka-ui
+    mode: "0755"
+
+# 3) Tulis konfigurasi aplikasi (YAML)
+- name: Write /etc/kafka-ui/config.yml
+  ansible.builtin.copy:
+    dest: /etc/kafka-ui/config.yml
+    owner: kafka-ui
+    group: kafka-ui
+    mode: "0644"
+    content: |
+      kafka:
+        clusters:
+          - name: lab
+            bootstrap-servers: {{ kafka_ui_bootstrap_servers | default('192.168.2.226:9092') }}
+      server:
+        port: {{ kafka_ui_port | default(8080) }}
+  register: ui_cfg
+
+# 4) Unit systemd untuk menjalankan container Kafbat UI
+- name: Install/Update kafka-ui.service (Docker)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/kafka-ui.service
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Kafbat Kafka UI (Docker)
+      After=network-online.target docker.service
+      Wants=network-online.target docker.service
+
+      [Service]
+      Restart=always
+      RestartSec=5
+      ExecStartPre=/usr/bin/docker pull ghcr.io/kafbat/kafka-ui:{{ kafka_ui_image_tag | default('v1.3.0') }}
+      ExecStartPre=-/usr/bin/docker rm -f kafbat-ui
+      ExecStart=/usr/bin/docker run --name kafbat-ui \
+        -p {{ kafka_ui_port | default(8080) }}:8080 \
+        -e SPRING_CONFIG_ADDITIONAL_LOCATION=/etc/kafka-ui/config.yml \
+        -v /etc/kafka-ui/config.yml:/etc/kafka-ui/config.yml:ro \
+        ghcr.io/kafbat/kafka-ui:{{ kafka_ui_image_tag | default('v1.3.0') }}
+      ExecStop=/usr/bin/docker stop kafbat-ui
+
+      [Install]
+      WantedBy=multi-user.target
+  register: unit_file
+
+- name: systemd daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  when: unit_file.changed
+
+# 5) Start (atau restart jika config/unit berubah)
+- name: Ensure kafka-ui service started
+  ansible.builtin.systemd:
+    name: kafka-ui
+    state: "{{ (ui_cfg.changed or unit_file.changed) | ternary('restarted','started') }}"
+    enabled: yes
+    daemon_reload: "{{ unit_file.changed | bool }}"
+
+# 6) Tunggu port UI up
+- name: Wait until UI is reachable
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ kafka_ui_port | default(8080) }}"
+    timeout: 120
