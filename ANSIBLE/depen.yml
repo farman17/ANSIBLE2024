@@ -13,8 +13,8 @@
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
-    - grafana
-    - prometheus
+    #- grafana
+    #- prometheus
     #- harbor
     #- k3s-kubernetes
     #- awx-ansible
@@ -23,6 +23,6 @@
     #- bind9_dns
     #- jenkins
     #- redismaster
-    #- redis-replica
+    - redisslave
     #- rancher
     #- SUMMARY

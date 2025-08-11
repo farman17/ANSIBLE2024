@@ -1,14 +1,17 @@
+#Download Package
 - name: MINio-Download package
   ansible.builtin.get_url:
     url: https://dl.min.io/server/minio/release/linux-amd64/minio
     dest: /usr/local/bin
-   
+
+#ADD User
 - name: Minio server-useradd
   user:
     name: minio  
     shell: /sbin/nologin
     state: present   
 
+#Password Config
 - name: Expiring password for user
   shell: chage -E 0 minio   
 

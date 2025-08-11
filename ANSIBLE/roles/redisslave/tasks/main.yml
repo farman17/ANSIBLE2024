@@ -1,0 +1,100 @@
+- name: Introductions
+  ansible.builtin.debug:
+    msg: "Installing and configuring Redis replica."
+
+- name: Add Redis PPA (opsional)
+  ansible.builtin.apt_repository:
+    repo: ppa:redislabs/redis
+    state: present
+
+- name: Install Redis
+  ansible.builtin.apt:
+    name: redis-server
+    state: present
+    update_cache: yes
+
+# --- Konfigurasi dasar & keamanan ---
+- name: Set tcp-keepalive to 60
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*tcp-keepalive\s+\d+'
+    line: 'tcp-keepalive 60'
+  notify: Restart redis
+
+- name: Bind ke loopback + IP replica (server ini)
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*bind\s+.*'
+    line: 'bind 127.0.0.1 {{ ip_nodes_redis_replica }}'
+  notify: Restart redis
+
+# Kalau klien akan membaca dari replica, berikan password juga:
+- name: Require password (replica)
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*requirepass\s+.*'
+    line: 'requirepass {{ pass_redis }}'
+  notify: Restart redis
+
+# --- Replikasi ---
+- name: Set replicaof -> master
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*(replicaof|slaveof)\s+.*'
+    line: 'replicaof {{ ip_nodes_redis_master }} {{ redis_port | default(6379) }}'
+  notify: Restart redis
+
+- name: Set masterauth (password master)
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*masterauth\s+.*'
+    line: 'masterauth {{ pass_redis }}'
+  notify: Restart redis
+
+- name: Pastikan replica read-only
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*replica-read-only\s+.*'
+    line: 'replica-read-only yes'
+  notify: Restart redis
+
+# --- Persistensi & memori (opsional tapi direkomendasikan) ---
+- name: Enable AOF persistence
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*appendonly\s+\w+'
+    line: 'appendonly yes'
+  notify: Restart redis
+
+- name: Set maxmemory (opsional)
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*maxmemory\s+.*'
+    line: 'maxmemory {{ redis_maxmemory | default("512mb") }}'
+  notify: Restart redis
+
+- name: Set eviction policy (opsional)
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*maxmemory-policy\s+.*'
+    line: 'maxmemory-policy {{ redis_eviction_policy | default("allkeys-lru") }}'
+  notify: Restart redis
+
+# --- Service ---
+- name: Ensure redis is enabled and started
+  ansible.builtin.service:
+    name: redis-server
+    state: started
+    enabled: yes
+
+# --- Verifikasi replikasi ---
+- name: Check replication status (replica)
+  ansible.builtin.command: bash -lc "redis-cli INFO replication | egrep 'role|master_link_status|master_host|master_port'"
+  environment:
+    REDISCLI_AUTH: "{{ pass_redis }}"
+  register: replication_info
+  changed_when: false
+
+- name: Show replication status
+  ansible.builtin.debug:
+    var: replication_info.stdout_lines
