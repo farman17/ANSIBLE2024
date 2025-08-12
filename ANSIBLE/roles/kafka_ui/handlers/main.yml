@@ -1,6 +1,6 @@
 - name: Daemon-reload
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
 
 - name: Restart kafka-ui
   ansible.builtin.systemd:

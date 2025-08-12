@@ -1,43 +1,63 @@
+---
 # === Kafka UI via Docker (Tasks) ===
-# Vars yang bisa di-override:
-# kafka_ui_bootstrap_servers, kafka_ui_port, kafka_ui_image_repo, kafka_ui_image_tag
 
+- name: Ensure docker group exists
+  ansible.builtin.group:
+    name: docker
+    state: present
 
 - name: Ensure kafka-ui login user (with home & docker group)
   ansible.builtin.user:
-    name: "{{ kafka_ui_user | default('kafka-ui') }}"
+    name: "{{ kafka_ui_user }}"
     shell: /bin/bash
     create_home: yes
     groups: docker
     append: yes
     password: "{{ kafka_ui_password_hash | default(omit) }}"
-    update_password: on_create   # password hanya di-set saat user pertama dibuat
+    update_password: on_create
 
 - name: Ensure config dir exists
   ansible.builtin.file:
     path: /etc/kafka-ui
     state: directory
-    owner: "{{ kafka_ui_user | default('kafka-ui') }}"
-    group: "{{ kafka_ui_user | default('kafka-ui') }}"
+    owner: "{{ kafka_ui_user }}"
+    group: "{{ kafka_ui_user }}"
     mode: "0755"
 
-# Tulis konfigurasi aplikasi
+- name: Ensure data dir for dynamic config exists
+  ansible.builtin.file:
+    path: "{{ kafka_ui_dynamic_config_dir }}"
+    state: directory
+    owner: "{{ kafka_ui_user }}"
+    group: "{{ kafka_ui_user }}"
+    mode: "0750"
+
+# Tulis konfigurasi aplikasi (pakai template & dukung multi-cluster)
 - name: Write /etc/kafka-ui/config.yml
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: config.yml.j2
     dest: /etc/kafka-ui/config.yml
-    owner: "{{ kafka_ui_user | default('kafka-ui') }}"
-    group: "{{ kafka_ui_user | default('kafka-ui') }}"
+    owner: "{{ kafka_ui_user }}"
+    group: "{{ kafka_ui_user }}"
     mode: "0644"
-    content: |
-      kafka:
-        clusters:
-          - name: lab
-            bootstrap-servers: {{ kafka_ui_bootstrap_servers | default('192.168.2.226:9092') }}
-      server:
-        port: {{ kafka_ui_port | default(8080) }}
   notify: Restart kafka-ui
 
-# Unit systemd (pakai var repo & tag) → NOTIFY handlers
+# Simpan env di file (lebih aman daripada di unit)
+- name: Write /etc/kafka-ui/kafka-ui.env
+  ansible.builtin.copy:
+    dest: /etc/kafka-ui/kafka-ui.env
+    owner: "{{ kafka_ui_user }}"
+    group: "{{ kafka_ui_user }}"
+    mode: "0600"
+    content: |
+      AUTH_TYPE={{ kafka_ui_auth_type }}
+      SPRING_SECURITY_USER_NAME={{ kafka_ui_auth_user }}
+      SPRING_SECURITY_USER_PASSWORD={{ kafka_ui_auth_password }}
+      DYNAMIC_CONFIG_ENABLED={{ kafka_ui_dynamic_enabled | ternary('true','false') }}
+      SPRING_CONFIG_ADDITIONAL_LOCATION=/etc/kafka-ui/config.yml
+  no_log: true
+
+# Unit systemd → Docker run + dynamic config + log limits
 - name: Install/Update kafka-ui.service (Docker)
   ansible.builtin.copy:
     dest: /etc/systemd/system/kafka-ui.service
@@ -50,19 +70,21 @@
       Requires=docker.service
 
       [Service]
-      User={{ kafka_ui_user | default('kafka-ui') }}
+      User={{ kafka_ui_user }}
       Restart=always
       RestartSec=5
-      ExecStartPre=/usr/bin/docker pull {{ kafka_ui_image_repo | default('provectuslabs/kafka-ui') }}:{{ kafka_ui_image_tag | default('v0.7.2') }}
+      StartLimitIntervalSec=60
+      StartLimitBurst=5
+      TimeoutStartSec=0
+      ExecStartPre=/usr/bin/docker pull {{ kafka_ui_image_repo }}:{{ kafka_ui_image_tag }}
       ExecStartPre=-/usr/bin/docker rm -f kafka-ui
       ExecStart=/usr/bin/docker run --name kafka-ui \
-        -p {{ kafka_ui_port | default(8080) }}:8080 \
-        -e AUTH_TYPE={{ kafka_ui_auth_type | default('LOGIN_FORM') }} \
-        -e SPRING_SECURITY_USER_NAME={{ kafka_ui_auth_user | default('admin') }} \
-        -e SPRING_SECURITY_USER_PASSWORD={{ kafka_ui_auth_password | default('ChangeMe!') }} \
-        -e SPRING_CONFIG_ADDITIONAL_LOCATION=/etc/kafka-ui/config.yml \
+        --env-file /etc/kafka-ui/kafka-ui.env \
+        --log-opt max-size=10m --log-opt max-file=3 \
+        -p {{ kafka_ui_port }}:8080 \
         -v /etc/kafka-ui/config.yml:/etc/kafka-ui/config.yml:ro \
-        {{ kafka_ui_image_repo | default('provectuslabs/kafka-ui') }}:{{ kafka_ui_image_tag | default('v0.7.2') }}
+        -v {{ kafka_ui_dynamic_config_dir }}:/etc/kafkaui \
+        {{ kafka_ui_image_repo }}:{{ kafka_ui_image_tag }}
       ExecStop=/usr/bin/docker stop kafka-ui
 
       [Install]
@@ -85,9 +107,22 @@
     name: kafka-ui
     state: started
 
-# Tunggu port UI up
-- name: Wait until UI is reachable
+# Tunggu port UI up (fallback awal)
+- name: Wait until UI TCP port is reachable
   ansible.builtin.wait_for:
     host: 127.0.0.1
-    port: "{{ kafka_ui_port | default(8080) }}"
+    port: "{{ kafka_ui_port }}"
     timeout: 120
+
+# Health check yang lebih bermakna (actuator)
+- name: Wait until UI is healthy (Spring actuator)
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ kafka_ui_port }}/actuator/health"
+    method: GET
+    status_code: 200
+    return_content: false
+  register: ui_health
+  retries: 30
+  delay: 2
+  until: ui_health.status == 200
+  failed_when: ui_health.status is defined and ui_health.status not in [200]

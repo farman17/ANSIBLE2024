@@ -1,0 +1,12 @@
+kafka:
+  clusters:
+{% for c in kafka_ui_clusters %}
+    - name: {{ c.name }}
+      bootstrap-servers: {{ c.bootstrap_servers }}
+{% endfor %}
+
+server:
+  port: {{ kafka_ui_port }}
+
+# Aktifkan dynamic config agar tombol "Configure" muncul
+dynamic.config.enabled: {{ kafka_ui_dynamic_enabled | ternary('true','false') }}

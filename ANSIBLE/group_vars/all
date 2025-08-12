@@ -1,4 +1,33 @@
-#KAFKA
+# ==== Defaults: Kafka UI (override di play/host_vars bila perlu) ====
+
+kafka_ui_user: kafka-ui
+kafka_ui_port: 8080
+
+kafka_ui_image_repo: provectuslabs/kafka-ui
+kafka_ui_image_tag: v0.7.2
+# — atau Kafbat terbaru
+# kafka_ui_image_repo: "ghcr.io/kafbat/kafka-ui"
+# kafka_ui_image_tag: "latest"
+
+# Login ke Kafka UI
+kafka_ui_auth_type: LOGIN_FORM
+kafka_ui_auth_user: admin
+kafka_ui_auth_password: farman123
+
+# Dynamic config (untuk tombol "Configure")
+kafka_ui_dynamic_enabled: true
+kafka_ui_dynamic_config_dir: /var/lib/kafka-ui   # dipetakan ke /etc/kafkaui di container
+
+# Daftar cluster awal (bisa banyak)
+kafka_ui_clusters:
+  - name: lab
+    bootstrap_servers: "192.168.2.226:9092"
+
+# Opsional: hash password user Linux kafka-ui (biarkan kosong untuk skip)
+kafka_ui_password_hash: ~
+#####################################################################################
+
+#KAFKA-BACKEND
 kafka_scala_version: "2.13"
 kafka_version: "3.7.0"
 
@@ -26,24 +55,6 @@ kafka_offsets_rf: 1
 kafka_txn_rf: 1
 kafka_min_isr: 1
 ################################################################
-
-kafka_ui_bootstrap_servers: "192.168.2.226:9092"
-
-# pilih salah satu:
-# — Provectus lama (seperti yang tampil v0.7.2)
-kafka_ui_image_repo: "provectuslabs/kafka-ui"
-kafka_ui_image_tag: "v0.7.2"
-
-# — atau Kafbat terbaru
-# kafka_ui_image_repo: "ghcr.io/kafbat/kafka-ui"
-# kafka_ui_image_tag: "latest"
-
-kafka_ui_port: 8080
-
-kafka_ui_auth_type: LOGIN_FORM
-kafka_ui_auth_user: admin
-kafka_ui_auth_password: farman123
-
 
 #HARBOR CONFIG
 hostname: 192.168.2.226
