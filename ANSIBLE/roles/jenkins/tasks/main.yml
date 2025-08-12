@@ -1,48 +1,78 @@
-- name: Add an Apt signing key with URL
-  ansible.builtin.apt_key:
-    url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
-    state: present
 
-- name: add repository Jenkins
-  command: sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+    - name: Tentukan paket Java 17 sesuai OS family
+      ansible.builtin.set_fact:
+        java_pkg: "{{ java_pkg_map[ansible_os_family] | default('java-17-openjdk') }}"
 
-- name: Update apt repo and cache 
-  apt: update_cache=yes
+    - name: Instal Java 17
+      ansible.builtin.package:
+        name: "{{ java_pkg }}"
+        state: present
 
-- name: Install Jenkins  (state=present is optional)
-  ansible.builtin.apt:
-    name: jenkins
-    state: present
+    - name: Buat group Jenkins
+      ansible.builtin.group:
+        name: "{{ jenkins_group }}"
+        state: present
 
-- name: copy config
-  copy:
-    src: ../templates/domain
-    dest: /etc/nginx/sites-enabled/{{ domain_jenkins }}
-  become: true
+    - name: Buat user Jenkins
+      ansible.builtin.user:
+        name: "{{ jenkins_user }}"
+        group: "{{ jenkins_group }}"
+        home: "{{ jenkins_home }}"
+        shell: /usr/sbin/nologin
+        create_home: yes
+        system: yes
 
-- name: Replace port at default jenkins
-  replace:
-        path: /etc/default/jenkins
-        regexp: '8080'
-        replace: '{{ port_jenkins }}'
+    - name: Buat direktori JENKINS_HOME
+      ansible.builtin.file:
+        path: "{{ jenkins_home }}"
+        state: directory
+        owner: "{{ jenkins_user }}"
+        group: "{{ jenkins_group }}"
+        mode: "0755"
 
-- name: Replace port at sites-enabled NGINX
-  replace:
-        path: /etc/nginx/sites-enabled/{{ domain_jenkins }}
-        regexp: '8080'
-        replace: '{{ port_jenkins }}'
+    - name: Buat direktori penyimpanan WAR
+      ansible.builtin.file:
+        path: "{{ jenkins_war_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
 
-- name: Replace domain at sites-enabled NGINX
-  replace:
-        path: /etc/nginx/sites-enabled/{{ domain_jenkins }}
-        regexp: 'domain'
-        replace: '{{ domain_jenkins }}'
+    - name: (Opsional) siapkan checksum prefix
+      ansible.builtin.set_fact:
+        jenkins_war_checksum_prefixed: "sha256:{{ jenkins_war_checksum }}"
+      when: jenkins_war_checksum | default('') | length > 0
 
-- name: restart NGINX
-  service:
-    name: nginx
-    state: restarted
+    - name: Unduh jenkins.war
+      ansible.builtin.get_url:
+        url: "{{ jenkins_war_url }}"
+        dest: "{{ jenkins_war_path }}"
+        mode: "0644"
+        checksum: "{{ jenkins_war_checksum_prefixed | default(omit) }}"
 
-- name: DONE
-  debug:
-    msg: "The Jenkins CICD Installed successfully"
+    - name: Pasang unit file systemd untuk Jenkins
+      ansible.builtin.template:
+        src: "templates/jenkins.service.j2"
+        dest: "/etc/systemd/system/jenkins.service"
+        mode: "0644"
+      notify:
+        - reload systemd
+        - restart jenkins
+
+    - name: Enable & start service Jenkins
+      ansible.builtin.systemd:
+        name: jenkins
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Tunggu port Jenkins ready
+      ansible.builtin.wait_for:
+        port: "{{ jenkins_port }}"
+        delay: 2
+        timeout: 300
+
+    - name: Info lokasi initial admin password
+      ansible.builtin.debug:
+        msg: "Password awal ada di {{ jenkins_home }}/secrets/initialAdminPassword"
+

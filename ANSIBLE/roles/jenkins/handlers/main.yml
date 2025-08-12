@@ -1,0 +1,7 @@
+- name: reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+
+- name: restart jenkins
+  ansible.builtin.systemd:
+    name: jenkins
+    state: restarted

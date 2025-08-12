@@ -21,10 +21,10 @@
     #- minio
     #- webmin
     #- bind9_dns
-    #- jenkins
+    - jenkins
     #- redismaster
     #- redisslave
     #- kafka
-    - kafka_ui
+    #- kafka_ui
     #- rancher
     #- SUMMARY

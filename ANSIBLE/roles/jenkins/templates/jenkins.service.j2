@@ -1,0 +1,22 @@
+[Unit]
+Description=Jenkins (WAR)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ jenkins_user }}
+Group={{ jenkins_group }}
+Environment="JENKINS_HOME={{ jenkins_home }}"
+Environment="JENKINS_PORT={{ jenkins_port }}"
+Environment="JAVA_OPTS={{ jenkins_java_opts }}"
+WorkingDirectory={{ jenkins_home }}
+ExecStart=/usr/bin/java $JAVA_OPTS -jar {{ jenkins_war_path }} --httpPort=${JENKINS_PORT}
+Restart=on-failure
+RestartSec=5
+UMask=0027
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

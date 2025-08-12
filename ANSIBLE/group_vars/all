@@ -72,8 +72,36 @@ secret_key: farman17
 password: root123
 
 #JENKINS CONFIG
-domain_jenkins: 192.168.33.10
+domain_jenkins: 192.168.2.226
 port_jenkins: 9123
+######################################################
+# Pemetaan paket Java per OS family
+java_pkg_map:
+  Debian: openjdk-17-jdk
+  RedHat: java-17-openjdk
+  Suse: java-17-openjdk
+  Amazon: java-17-openjdk
+
+# Default Jenkins (bisa dioverride di group_vars/jenkins.yml atau host_vars)
+jenkins_user: jenkins
+jenkins_group: jenkins
+jenkins_home: /var/lib/jenkins
+jenkins_war_dir: /opt/jenkins
+jenkins_war_path: "{{ jenkins_war_dir }}/jenkins.war"
+
+# Tuning Java
+jenkins_java_opts: "-Xms512m -Xmx1024m"
+
+# Channel bisa 'war-stable' (LTS) atau 'war' (weekly)
+jenkins_channel: "war-stable"
+jenkins_version: "2.462.3"
+jenkins_port: 9123
+
+# URL unduhan & checksum opsional
+jenkins_war_url: "https://get.jenkins.io/{{ jenkins_channel }}/{{ jenkins_version }}/jenkins.war"
+jenkins_war_checksum: ""   # isi sha256 bila mau verifikasi
+#########################################################
+
 
 #COROSYNC CONFIG
 password_hacluster: farman123
