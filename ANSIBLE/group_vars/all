@@ -58,7 +58,7 @@ kafka_min_isr: 1
 
 #HARBOR CONFIG
 hostname: 192.168.2.226
-port: 8008
+harbor_port: 8008
 pass_harbor: 123456Ab
 harbor_version: latest
 harbor_install_dir: /usr/local/bin
