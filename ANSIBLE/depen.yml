@@ -1,6 +1,6 @@
 - name: ANSIBLE-COLONYLABS@2024
   hosts: server
-  remote_user: farman17
+  remote_user: server1
   become: yes
   become_method: sudo
   vars:
