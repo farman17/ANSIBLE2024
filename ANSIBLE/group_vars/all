@@ -124,7 +124,7 @@ redis_maxmemory: "512mb"
 redis_eviction_policy: "allkeys-lru"
 
 #password sudo
-vault_sudo_password: t0x1cF31
+vault_sudo_password: server123
 
 #node_exporter
 download_version_node: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
