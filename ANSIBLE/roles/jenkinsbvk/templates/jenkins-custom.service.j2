@@ -11,7 +11,7 @@ Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 ExecStart=/usr/bin/java \
   -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2 \
-  -Xmx{{ jenkins_xmx }} \
+  -Xmx{{ jenkinsbvk_xmx }} \
   -Djava.awt.headless=true \
   -DJENKINS_HOME={{ jenkinsbvk_home }} \
   -jar {{ jenkinsbvk_war_path }} \
