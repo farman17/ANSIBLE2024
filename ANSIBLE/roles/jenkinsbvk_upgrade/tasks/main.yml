@@ -22,11 +22,16 @@
     dest: "/root/app/jenkins/backup/jenkins-home-{{ ansible_facts['date_time']['date'] }}.tar.gz"
     format: gz
 
+- name: Debug URL Jenkins
+  ansible.builtin.debug:
+    msg: "{{ jenkinsbvk_war_url }}"
+
 - name: Download Jenkins WAR baru
   ansible.builtin.get_url:
     url: "{{ jenkinsbvk_war_url }}"
     dest: "{{ jenkinsbvk_war_path }}"
     mode: "0644"
+    force: yes
 
 - name: Restart Jenkins
   ansible.builtin.systemd:
