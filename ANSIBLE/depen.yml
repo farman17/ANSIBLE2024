@@ -3,9 +3,9 @@
   become: yes
   become_method: sudo
   roles:
-    - update
-    - dependen
-    - nginx
+    #- update
+    #- dependen
+    #- nginx
     #- docker
     #- corosync-cluster
     #- corosync-client
@@ -18,7 +18,7 @@
     #- minio
     #- webmin
     #- bind9_dns
-    #- jenkins
+    - jenkins
     #- redismaster
     #- redisslave
     #- kafka
