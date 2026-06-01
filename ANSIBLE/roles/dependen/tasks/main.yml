@@ -17,7 +17,6 @@
     - wget
     - net-tools
    # - python-mysqldb
-    - python-dev
     - libmysqlclient-dev
     - python3-pip
     - python3-dev
