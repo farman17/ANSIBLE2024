@@ -1,0 +1,43 @@
+- name: Cek file WAR lama
+  ansible.builtin.stat:
+    path: "{{ jenkinsbvk_war_path }}"
+  register: war_file
+
+- name: Buat direktori backup
+  ansible.builtin.file:
+    path: /root/app/jenkins/backup
+    state: directory
+    mode: "0755"
+
+- name: Backup jenkins.war lama
+  ansible.builtin.copy:
+    src: "{{ jenkinsbvk_war_path }}"
+    dest: "/root/app/jenkins/backup/jenkins-{{ ansible_date_time.date }}.war"
+    remote_src: yes
+  when: war_file.stat.exists
+
+- name: Backup JENKINS_HOME
+  ansible.builtin.archive:
+    path: "{{ jenkinsbvk_home }}"
+    dest: "/root/app/jenkins/backup/jenkins-home-{{ ansible_date_time.date }}.tar.gz"
+    format: gz
+
+- name: Download Jenkins WAR baru
+  ansible.builtin.get_url:
+    url: "{{ jenkinsbvk_war_url }}"
+    dest: "{{ jenkinsbvk_war_path }}"
+    mode: "0644"
+
+- name: Restart Jenkins
+  ansible.builtin.systemd:
+    name: jenkins-custom
+    state: restarted
+
+- name: Tunggu Jenkins aktif
+  ansible.builtin.wait_for:
+    port: "{{ jenkinsbvk_port }}"
+    timeout: 300
+
+- name: Info upgrade selesai
+  ansible.builtin.debug:
+    msg: "Jenkins berhasil di-upgrade ke versi {{ jenkinsbvk_version }}"
