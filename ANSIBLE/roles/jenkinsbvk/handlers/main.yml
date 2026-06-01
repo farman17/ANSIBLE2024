@@ -1,1 +1,8 @@
-
+- name: reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    
+- name: restart jenkinsbvk
+  ansible.builtin.systemd:
+    name: jenkins-custom
+    state: restarted
