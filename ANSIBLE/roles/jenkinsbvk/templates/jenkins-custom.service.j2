@@ -13,12 +13,12 @@ ExecStart=/usr/bin/java \
   -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2 \
   -Xmx{{ jenkins_xmx }} \
   -Djava.awt.headless=true \
-  -DJENKINS_HOME={{ jenkins_home }} \
-  -jar {{ jenkins_war_path }} \
-  --logfile={{ jenkins_log_dir }}/jenkins.log \
-  --webroot={{ jenkins_cache_dir }} \
-  --httpPort={{ jenkins_port }} \
-  --debug={{ jenkins_debug }}
+  -DJENKINS_HOME={{ jenkinsbvk_home }} \
+  -jar {{ jenkinsbvk_war_path }} \
+  --logfile={{ jenkinsbvk_log_dir }}/jenkins.log \
+  --webroot={{ jenkinsbvk_cache_dir }} \
+  --httpPort={{ jenkinsbvk_port }} \
+  --debug={{ jenkinsbvk_debug }}
 
 Restart=on-failure
 
