@@ -1,1 +1,46 @@
+- name: Tentukan paket Java
+  ansible.builtin.set_fact:
+    java_pkg: "{{ java_pkg_map[ansible_facts['os_family']] | default('java-17-openjdk') }}"
 
+- name: Install Java
+  ansible.builtin.package:
+    name: "{{ java_pkg }}"
+    state: present
+
+- name: Buat struktur direktori Jenkins
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ jenkins_base_dir }}"
+    - "{{ jenkins_home }}"
+    - "{{ jenkins_log_dir }}"
+    - "{{ jenkins_cache_dir }}"
+
+- name: Download Jenkins WAR
+  ansible.builtin.get_url:
+    url: "{{ jenkins_war_url }}"
+    dest: "{{ jenkins_war_path }}"
+    mode: "0644"
+
+- name: Deploy systemd service
+  ansible.builtin.template:
+    src: jenkins-custom.service.j2
+    dest: /etc/systemd/system/jenkins-custom.service
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart jenkinsbvk
+
+- name: Enable Jenkins service
+  ansible.builtin.systemd:
+    name: jenkins-custom
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Tunggu port Jenkins aktif
+  ansible.builtin.wait_for:
+    port: "{{ jenkins_port }}"
+    timeout: 300
