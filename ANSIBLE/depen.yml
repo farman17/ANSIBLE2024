@@ -1,15 +1,15 @@
 - name: ANSIBLE-COLONYLABS@2024
-  hosts: node01
-  remote_user: node1
+  hosts: node0qq
+  remote_user: node1qq
   become: yes
   become_method: sudo
   vars:
     ansible_become_pass: "{{ vault_sudo_password }}"
   roles:
     - update
-    #- dependen
-    #- nginx
-    - docker
+    - dependen
+    - nginx
+    #- docker
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
@@ -21,7 +21,7 @@
     #- minio
     #- webmin
     #- bind9_dns
-    - jenkins
+    #- jenkins
     #- redismaster
     #- redisslave
     #- kafka
