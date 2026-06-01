@@ -26,7 +26,7 @@
     - curl
     - figlet 
     - software-properties-common
-    - python-apt
+    - python3-apt
     - gnupg2 
     - curl 
     - unzip
