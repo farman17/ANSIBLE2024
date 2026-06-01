@@ -78,6 +78,8 @@ jenkinsbvk_version: "2.504.1"
 jenkinsbvk_port: 9123
 jenkinsbvk_log_dir: /root/app/jenkins/logs
 jenkinsbvk_cache_dir: /root/app/jenkins/cache/jenkins/war
+jenkinsbvk_xmx: 2048m
+jenkinsbvk_debug: 5
 
 #JENKINS CONFIG
 domain_jenkins: 192.168.2.226
