@@ -19,7 +19,8 @@
     #- webmin
     #- bind9_dns
     #- jenkins
-     - jenkinsbvk
+    #- jenkinsbvk
+     - jenkinsbvk_upgrade
     #- redismaster
     #- redisslave
     #- kafka
