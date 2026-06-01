@@ -1,1 +1,13 @@
-
+jenkins_version: "2.504.1"
+jenkins_base_dir: /root/app/jenkins
+jenkins_home: /root/app/jenkins/JENKINS_HOME
+jenkins_log_dir: /root/app/jenkins/logs
+jenkins_cache_dir: /root/app/jenkins/cache/jenkins/war
+jenkins_war_path: /root/app/jenkins/jenkins.war
+jenkins_port: 9123
+jenkins_xmx: 2048m
+jenkins_debug: 5
+jenkins_war_url: "https://get.jenkins.io/war-stable/2.504.1/jenkins.war"
+java_pkg_map:
+  Debian: openjdk-17-jdk
+  RedHat: java-17-openjdk
