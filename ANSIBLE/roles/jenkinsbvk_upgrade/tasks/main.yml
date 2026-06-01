@@ -12,14 +12,14 @@
 - name: Backup jenkins.war lama
   ansible.builtin.copy:
     src: "{{ jenkinsbvk_war_path }}"
-    dest: "/root/app/jenkins/backup/jenkins-{{ ansible_date_time.date }}.war"
+    dest: "/root/app/jenkins/backup/jenkins-{{ ansible_facts['date_time']['date'] }}.war"
     remote_src: yes
   when: war_file.stat.exists
 
 - name: Backup JENKINS_HOME
   ansible.builtin.archive:
     path: "{{ jenkinsbvk_home }}"
-    dest: "/root/app/jenkins/backup/jenkins-home-{{ ansible_date_time.date }}.tar.gz"
+    dest: "/root/app/jenkins/backup/jenkins-home-{{ ansible_facts['date_time']['date'] }}.tar.gz"
     format: gz
 
 - name: Download Jenkins WAR baru
