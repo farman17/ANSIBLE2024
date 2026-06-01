@@ -1,1 +1,26 @@
+[Unit]
+Description=Custom Jenkins Instance
+After=network.target
 
+[Service]
+Type=simple
+
+User=root
+
+Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+ExecStart=/usr/bin/java \
+  -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2 \
+  -Xmx{{ jenkins_xmx }} \
+  -Djava.awt.headless=true \
+  -DJENKINS_HOME={{ jenkins_home }} \
+  -jar {{ jenkins_war_path }} \
+  --logfile={{ jenkins_log_dir }}/jenkins.log \
+  --webroot={{ jenkins_cache_dir }} \
+  --httpPort={{ jenkins_port }} \
+  --debug={{ jenkins_debug }}
+
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
