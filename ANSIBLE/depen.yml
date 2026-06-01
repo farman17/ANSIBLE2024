@@ -18,7 +18,8 @@
     #- minio
     #- webmin
     #- bind9_dns
-    - jenkins
+    #- jenkins
+     - jenkinsbvk
     #- redismaster
     #- redisslave
     #- kafka
