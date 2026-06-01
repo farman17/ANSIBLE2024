@@ -71,6 +71,12 @@ secret_key: farman17
 #WEBMIN CONFIG
 password: root123
 
+#JENKINSBVK
+jenkinsbvk_home: /root/app/jenkins/JENKINS_HOME
+jenkinsbvk_war_path: /root/app/jenkins/jenkins.war
+jenkinsbvk_version: "2.504.1"
+jenkinsbvk_port: 9123
+
 #JENKINS CONFIG
 domain_jenkins: 192.168.2.226
 port_jenkins: 9123
