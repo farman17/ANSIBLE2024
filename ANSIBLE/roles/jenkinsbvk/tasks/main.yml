@@ -13,15 +13,15 @@
     state: directory
     mode: "0755"
   loop:
-    - "{{ jenkins_base_dir }}"
-    - "{{ jenkins_home }}"
-    - "{{ jenkins_log_dir }}"
-    - "{{ jenkins_cache_dir }}"
+    - "{{ jenkinsbvk_base_dir }}"
+    - "{{ jenkinsbvk_home }}"
+    - "{{ jenkinsbvk_log_dir }}"
+    - "{{ jenkinsbvk_cache_dir }}"
 
 - name: Download Jenkins WAR
   ansible.builtin.get_url:
-    url: "{{ jenkins_war_url }}"
-    dest: "{{ jenkins_war_path }}"
+    url: "{{ jenkinsbvk_war_url }}"
+    dest: "{{ jenkinsbvk_war_path }}"
     mode: "0644"
 
 - name: Deploy systemd service
@@ -42,5 +42,5 @@
 
 - name: Tunggu port Jenkins aktif
   ansible.builtin.wait_for:
-    port: "{{ jenkins_port }}"
+    port: "{{ jenkinsbvk_port }}"
     timeout: 300
