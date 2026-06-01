@@ -1,7 +1,6 @@
-
     - name: Tentukan paket Java 17 sesuai OS family
       ansible.builtin.set_fact:
-        java_pkg: "{{ java_pkg_map[ansible_os_family] | default('java-17-openjdk') }}"
+        java_pkg: "{{ java_pkg_map[ansible_facts['os_family']] | default('java-17-openjdk') }}"
 
     - name: Instal Java 17
       ansible.builtin.package:
