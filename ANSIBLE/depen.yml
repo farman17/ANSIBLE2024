@@ -21,7 +21,8 @@
     #- jenkins
     #- jenkinsbvk
     #- jenkinsbvk_upgrade
-    - jenkinsbvk_rollback
+    #- jenkinsbvk_rollback
+     - java_switch
     #- redismaster
     #- redisslave
     #- kafka
