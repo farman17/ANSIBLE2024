@@ -83,6 +83,15 @@ jenkinsbvk_cache_dir: /root/app/jenkins/cache/jenkins/war
 jenkinsbvk_xmx: 2048m
 jenkinsbvk_debug: 5
 
+#JAVASWITCH
+java_version: 21
+java_home_map:
+  17: /usr/lib/jvm/java-17-openjdk-amd64
+  21: /usr/lib/jvm/java-21-openjdk-amd64
+java_packages:
+  17: openjdk-17-jdk
+  21: openjdk-21-jdk
+
 #JENKINS CONFIG
 domain_jenkins: 192.168.2.226
 port_jenkins: 9123
