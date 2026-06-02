@@ -33,12 +33,6 @@
     mode: "0644"
     force: yes
 
-- name: Deploy systemd service
-  ansible.builtin.template:
-    src: jenkins-custom.service.j2
-    dest: /etc/systemd/system/jenkins-custom.service
-    mode: "0644"
-
 - name: Reload systemd
   ansible.builtin.systemd:
     daemon_reload: yes
