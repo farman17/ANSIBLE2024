@@ -6,7 +6,7 @@
     #- update
     #- dependen
     #- nginx
-    #- docker
+    - docker
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
