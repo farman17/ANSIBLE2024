@@ -3,16 +3,16 @@
   become: yes
   become_method: sudo
   roles:
-    - update
-    - dependen
-    - nginx
-    - docker
+    #- update
+    #- dependen
+    #- nginx
+    #- docker
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
     #- grafana
     #- prometheus
-    #- harbor
+    - harbor
     #- k3s-kubernetes
     #- awx-ansible
     #- minio
