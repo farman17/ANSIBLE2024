@@ -1,9 +1,9 @@
-- lineinfile:
-    path: /etc/sudoers
-    state: present
-    regexp: '^%sudo'
-    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
-    validate: 'visudo -cf %s'
+#- lineinfile:
+ #   path: /etc/sudoers
+  #  state: present
+   # regexp: '^%sudo'
+    #line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    #validate: 'visudo -cf %s'
 
 - name: "Update Repository cache"
   apt:
