@@ -1,24 +1,19 @@
+- name: Cari backup WAR terbaru
+  ansible.builtin.shell:
+    cmd: ls -t /root/app/jenkins/backup/*.war | head -1
+  register: latest_backup
+  changed_when: false
+
 - name: Stop Jenkins
   ansible.builtin.systemd:
     name: jenkins-custom
     state: stopped
 
-- name: Restore Jenkins WAR
+- name: Restore backup WAR terbaru
   ansible.builtin.copy:
-    src: "{{ rollback_war_file }}"
+    src: "{{ latest_backup.stdout }}"
     dest: "{{ jenkinsbvk_war_path }}"
     remote_src: yes
-    mode: "0644"
-
-- name: Verifikasi versi WAR
-  ansible.builtin.command:
-    cmd: "java -jar {{ jenkinsbvk_war_path }} --version"
-  register: war_version
-  changed_when: false
-
-- name: Tampilkan versi WAR
-  ansible.builtin.debug:
-    var: war_version.stdout
 
 - name: Start Jenkins
   ansible.builtin.systemd:
@@ -29,7 +24,3 @@
   ansible.builtin.wait_for:
     port: "{{ jenkinsbvk_port }}"
     timeout: 300
-
-- name: Rollback selesai
-  ansible.builtin.debug:
-    msg: "Rollback Jenkins berhasil"
