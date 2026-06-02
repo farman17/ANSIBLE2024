@@ -6,7 +6,7 @@
     #- update
     #- dependen
     #- nginx
-    - docker
+    #- docker
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
@@ -20,7 +20,7 @@
     #- bind9_dns
     #- jenkins
     #- jenkinsbvk
-    #- jenkinsbvk_upgrade
+    - jenkinsbvk_upgrade
     #- redismaster
     #- redisslave
     #- kafka
