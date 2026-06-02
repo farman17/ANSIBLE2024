@@ -28,21 +28,3 @@
 - name: Tampilkan Java aktif
   ansible.builtin.debug:
     var: java_version_output.stderr_lines
-
-- name: Update JAVA_HOME Jenkins
-  ansible.builtin.lineinfile:
-    path: /etc/systemd/system/jenkins-custom.service
-    regexp: '^Environment=JAVA_HOME='
-    line: "Environment=JAVA_HOME={{ java_home }}"
-  register: java_home_changed
-
-- name: Reload systemd
-  ansible.builtin.systemd:
-    daemon_reload: yes
-  when: java_home_changed.changed
-
-- name: Restart Jenkins
-  ansible.builtin.systemd:
-    name: jenkins-custom
-    state: restarted
-  when: java_home_changed.changed
