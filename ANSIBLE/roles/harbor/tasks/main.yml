@@ -43,7 +43,7 @@
   replace:
     path: "{{ harbor_install_dir }}/harbor/harbor.yml"
     regexp: 'port: 80'
-    replace: "port: {{ port }}"
+    replace: "port: {{ harbor_port }}"
 
 - name: Replace admin password in harbor.yml
   replace:
