@@ -1,0 +1,48 @@
+- name: Install Java sesuai versi
+  ansible.builtin.apt:
+    name: "{{ java_packages[java_version] }}"
+    state: present
+    update_cache: yes
+
+- name: Set JAVA_HOME
+  ansible.builtin.set_fact:
+    java_home: "{{ java_home_map[java_version] }}"
+
+- name: Set default java
+  ansible.builtin.alternatives:
+    name: java
+    path: "{{ java_home }}/bin/java"
+
+- name: Set default javac
+  ansible.builtin.alternatives:
+    name: javac
+    path: "{{ java_home }}/bin/javac"
+
+- name: Verifikasi Java aktif
+  ansible.builtin.command:
+    cmd: java -version
+  register: java_version_output
+  changed_when: false
+  failed_when: false
+
+- name: Tampilkan Java aktif
+  ansible.builtin.debug:
+    var: java_version_output.stderr_lines
+
+- name: Update JAVA_HOME Jenkins
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/system/jenkins-custom.service
+    regexp: '^Environment=JAVA_HOME='
+    line: "Environment=JAVA_HOME={{ java_home }}"
+  register: java_home_changed
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  when: java_home_changed.changed
+
+- name: Restart Jenkins
+  ansible.builtin.systemd:
+    name: jenkins-custom
+    state: restarted
+  when: java_home_changed.changed
