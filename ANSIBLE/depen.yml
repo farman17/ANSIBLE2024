@@ -20,7 +20,8 @@
     #- bind9_dns
     #- jenkins
     #- jenkinsbvk
-    - jenkinsbvk_upgrade
+    #- jenkinsbvk_upgrade
+    - jenkinsbvk_rollback
     #- redismaster
     #- redisslave
     #- kafka
