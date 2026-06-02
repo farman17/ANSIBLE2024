@@ -3,10 +3,10 @@
   become: yes
   become_method: sudo
   roles:
-    #- update
-    #- dependen
-    #- nginx
-    #- docker
+    - update
+    - dependen
+    - nginx
+    - docker
     #- corosync-cluster
     #- corosync-client
     #- node_exporter
@@ -20,7 +20,7 @@
     #- bind9_dns
     #- jenkins
     #- jenkinsbvk
-    - jenkinsbvk_upgrade
+    #- jenkinsbvk_upgrade
     #- jenkinsbvk_rollback
     #- java_switch
     #- redismaster
