@@ -1,0 +1,35 @@
+- name: Stop Jenkins
+  ansible.builtin.systemd:
+    name: jenkins-custom
+    state: stopped
+
+- name: Restore Jenkins WAR
+  ansible.builtin.copy:
+    src: "{{ rollback_war_file }}"
+    dest: "{{ jenkinsbvk_war_path }}"
+    remote_src: yes
+    mode: "0644"
+
+- name: Verifikasi versi WAR
+  ansible.builtin.command:
+    cmd: "java -jar {{ jenkinsbvk_war_path }} --version"
+  register: war_version
+  changed_when: false
+
+- name: Tampilkan versi WAR
+  ansible.builtin.debug:
+    var: war_version.stdout
+
+- name: Start Jenkins
+  ansible.builtin.systemd:
+    name: jenkins-custom
+    state: started
+
+- name: Tunggu Jenkins aktif
+  ansible.builtin.wait_for:
+    port: "{{ jenkinsbvk_port }}"
+    timeout: 300
+
+- name: Rollback selesai
+  ansible.builtin.debug:
+    msg: "Rollback Jenkins berhasil"
