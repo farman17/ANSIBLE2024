@@ -1,0 +1,75 @@
+https://docs.google.com/document/d/1QrhwC1gWjo6QvxdpmIe1g5XuEpAzCoM4lsoWgWm9kLA/edit?tab=t.0
+
+
+Requirement 
+Ansible semaphore requires Python 3.9 or newer on the target 
+server minimal Ubuntu 22.04 
+check dlu ketersediaan di server yg akan dijadikan server semaphore : 
+cat /etc/os-release
+python3 --version
+
+jalankan dengan BoltDB (database embedded) sehingga tidak perlu MySQL: 
+
+
+docker run -d \
+  --name semaphore \
+  -p 3000:3000 \
+  -e SEMAPHORE_DB_DIALECT=bolt \
+  -e SEMAPHORE_ADMIN=admin \
+  -e SEMAPHORE_ADMIN_PASSWORD='Admin123!' \
+  -e SEMAPHORE_ADMIN_NAME=Administrator \
+  -e SEMAPHORE_ADMIN_EMAIL=admin@example.com \
+  semaphoreui/semaphore:latest
+
+
+masuk kedalam container :  
+docker exec -it semaphore bash 
+
+lalu test :  
+ansible all \
+-i "192.168.100.19," \
+-u server1 \
+-m ping \
+-e 'ansible_password=server123' 
+
+install ansible di server
+sudo apt update
+sudo apt install -y ansible 
+
+lalu, membuat SSH Key RSA di server:
+login ke server (jangan masuk ke root dulu) lalu : 
+
+ssh-keygen -t rsa -b 4096 -C "semaphore"
+
+
+Copy isinya ke server target: 
+ssh-copy-id farman17@10.188.24.42
+chmod 600 ~/.ssh/authorized_keys
+
+
+
+
+
+RULES  : 
+
+Misalnya inventory Semaphore Anda: 
+[node01]
+192.168.100.20 ansible_user=node1 
+
+
+Tetapi playbook di git : 
+- name: ANSIBLE-COLONYLABS@2024
+  hosts: node0qq
+  remote_user: node1qq 
+
+
+Maka Ansible akan mencari grup/host bernama node0qq di inventory. 
+
+Hubungan Inventory dan Playbook : 
+Inventory Semaphore —---> mendefinisikan target host. 
+Playbook —----> memilih grup mana dari inventory yang akan dijalankan. 
+
+
+
+
+
