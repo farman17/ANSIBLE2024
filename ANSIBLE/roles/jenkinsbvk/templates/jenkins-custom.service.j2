@@ -7,9 +7,9 @@ Type=simple
 
 User=root
 
-Environment=JAVA_HOME=/usr/lib/jvm/java-{{ java_version }}-openjdk-amd64
+Environment=JAVA_HOME={{ java_home_map[java_version] }}
 
-ExecStart=/usr/bin/java \
+ExecStart={{ java_home_map[java_version] }}/bin/java \
   -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2 \
   -Xmx{{ jenkinsbvk_xmx }} \
   -Djava.awt.headless=true \
