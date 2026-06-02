@@ -5,11 +5,11 @@
     #line: '%sudo ALL=(ALL) NOPASSWD: ALL'
     #validate: 'visudo -cf %s'
 
-- name: "Update Repository cache"
+- name: Update Repository cache
+  become: yes
+  become_user: root
   apt:
     update_cache: true
-    cache_valid_time: 3600
-    force_apt_get: true
 
 - name: Install apache2-utils (required for htpasswd)
   apt:
